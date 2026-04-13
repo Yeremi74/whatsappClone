@@ -1,0 +1,240 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 4px 12px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.searchBlock {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.searchLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+  padding: 0 4px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-size: 14px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-nav-cta);
+  box-shadow: var(--color-focus-ring);
+}
+
+.recommendations {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 6px;
+  background: var(--color-card-background);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 6px 0;
+  z-index: 50;
+  max-height: min(280px, 50vh);
+  overflow-y: auto;
+}
+
+.recommendationHeading {
+  margin: 0;
+  padding: 4px 12px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+}
+
+.recommendationEmpty {
+  margin: 0;
+  padding: 12px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.recommendationList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.recommendationItem {
+  margin: 0;
+}
+
+.recommendationButton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: background-color 0.15s ease;
+}
+
+.recommendationButton:hover {
+  background: var(--color-surface-hover);
+}
+
+.recommendationAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.recommendationAvatarPlaceholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--color-nav-cta);
+  color: var(--color-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.recommendationBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.recommendationName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recommendationEmail {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hint,
+.empty {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.error {
+  margin: 0 12px;
+  padding: 10px;
+  font-size: 13px;
+  color: var(--color-error-text);
+  background: var(--color-error-bg);
+  border-radius: 8px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: background-color 0.15s ease;
+}
+
+.row:hover {
+  background: var(--color-surface-hover);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.avatarPlaceholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--color-nav-cta);
+  color: var(--color-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.rowBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.rowName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rowEmail {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

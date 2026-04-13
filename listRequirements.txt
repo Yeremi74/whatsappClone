@@ -1,0 +1,15 @@
+1. Autenticación (Registro y Login)
+2. Gestión de perfil de usuario
+3. Búsqueda de usuarios
+4. Sistema de solicitudes de amistad
+5. Lista de contactos
+6. Chat en tiempo real (WebSockets)
+7. Envío de mensajes de texto
+8. Envío de emojis
+9. Subida y envío de imágenes
+10. Estados de lectura de mensajes (Enviado, Leído)
+11. Indicador de "Escribiendo..."
+12. Diseño Responsive (Móvil y Desktop)
+13. Manejo de errores de conexión
+14. README detallado
+15. Deploy en producción

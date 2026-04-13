@@ -1,0 +1,138 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 4px 12px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.themeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+}
+
+.themeLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.profileButton {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-nav-cta);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-nav-cta);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.profileButton:hover {
+  background: var(--color-nav-cta);
+  color: var(--color-secondary);
+}
+
+.languageDropdown {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.languageTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 132px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+}
+
+.languageTrigger:hover {
+  border-color: var(--color-nav-cta);
+}
+
+.languageFlag {
+  width: 22px;
+  height: 14px;
+  min-width: 22px;
+  min-height: 14px;
+  flex-shrink: 0;
+  display: block;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+  vertical-align: middle;
+}
+
+.languageTriggerText {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.languageChevron {
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: transform 0.15s ease;
+}
+
+.languageChevronOpen {
+  transform: rotate(180deg);
+}
+
+.languageMenu {
+  position: absolute;
+  z-index: 50;
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 100%;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-card-background);
+}
+
+.languageOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.languageOption:hover {
+  background: var(--color-surface-hover);
+}
+
+.languageOptionActive {
+  background: var(--color-surface-hover);
+  font-weight: 600;
+}

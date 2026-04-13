@@ -1,0 +1,19 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 0;
+  padding: 24px;
+}
+
+.hint {
+  margin: 0;
+  max-width: 420px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}

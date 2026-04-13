@@ -1,0 +1,180 @@
+.wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px;
+  background: var(--color-background);
+}
+
+.center {
+  margin: auto;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-family: var(--font-mono);
+}
+
+.empty {
+  margin: auto;
+  text-align: center;
+  max-width: 400px;
+}
+
+.empty p {
+  margin: 0 0 16px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.back {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: var(--color-card-background);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+}
+
+.back:hover {
+  background: var(--color-surface-hover);
+}
+
+.card {
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px;
+  background: var(--color-card-background);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  margin: 0 0 20px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+}
+
+.avatarPh {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: var(--color-primary-dark);
+  color: var(--color-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  border: 1px solid var(--color-border);
+}
+
+.userText {
+  min-width: 0;
+}
+
+.nameLink {
+  display: block;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-nav-cta);
+  cursor: pointer;
+  text-align: left;
+}
+
+.nameLink:hover {
+  text-decoration: underline;
+}
+
+.email {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.accept {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 16px;
+  border: 1px solid var(--color-nav-cta);
+  border-radius: 6px;
+  background: var(--color-nav-cta);
+  color: #fafafa;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.accept:hover:not(:disabled) {
+  background: var(--color-nav-cta-hover);
+  border-color: var(--color-nav-cta-hover);
+}
+
+.accept:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.reject {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 16px;
+  border: 1px solid var(--color-danger);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-danger);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.reject:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+}
+
+.reject:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

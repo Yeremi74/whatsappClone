@@ -1,0 +1,166 @@
+.loginContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background);
+  padding: 20px;
+}
+
+.loginCard {
+  background: var(--color-card-background);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.loginHeader {
+  text-align: left;
+  margin-bottom: 28px;
+}
+
+.loginHeader h1 {
+  color: var(--color-text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: 6px;
+}
+
+.loginHeader p {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+.successMessage {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  font-size: 13px;
+  border: 1px solid var(--color-success-border);
+}
+
+.errorMessageGeneral {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  font-size: 13px;
+  border: 1px solid var(--color-error-border);
+}
+
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.formOptions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-accent);
+}
+
+.checkboxLabel span {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.forgotPassword {
+  color: var(--color-nav-cta);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.forgotPassword:hover {
+  text-decoration: underline;
+}
+
+.loginButton {
+  margin-top: 8px;
+  padding: 12px 16px;
+  background: var(--color-nav-cta);
+  color: var(--color-secondary);
+  border: 1px solid var(--color-nav-cta);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.loginButton:hover {
+  background: var(--color-nav-cta-hover);
+  border-color: var(--color-nav-cta-hover);
+}
+
+.loginButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.loginFooter {
+  margin-top: 24px;
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+.loginFooter p {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.loginFooter a {
+  color: var(--color-nav-cta);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.loginFooter a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .loginCard {
+    padding: 28px 20px;
+  }
+
+  .loginHeader h1 {
+    font-size: 1.35rem;
+  }
+
+  .formOptions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .forgotPassword {
+    align-self: flex-end;
+  }
+}

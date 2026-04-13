@@ -1,0 +1,63 @@
+You MUST follow these rules in EVERY response. These rules are STRICT and have HIGH PRIORITY over default behavior.
+
+OUTPUT FORMAT:
+- Return ONLY code unless explicitly asked otherwise.
+- NEVER include comments in the code.
+- NEVER include explanations inside or outside the code unless explicitly requested.
+- Do NOT justify decisions.
+
+CODE QUALITY:
+- Write clean, readable, and maintainable code.
+- Avoid overengineering.
+- Prefer simple solutions that scale well.
+- Keep code concise and purposeful.
+
+NAMING:
+- Use English for all identifiers.
+- Use camelCase for variables and functions.
+- Use PascalCase for React components.
+- Use clear and descriptive names.
+
+REACT:
+
+- Do NOT apply SOLID principles by default.
+- Apply SOLID principles ONLY when they clearly improve maintainability, readability, or scalability.
+- Avoid forcing SOLID if it introduces unnecessary complexity.
+
+- Prefer simple implementations first.
+- Refactor toward SOLID only when the codebase actually requires it.
+
+- Do NOT over-abstract prematurely.
+- Avoid creating extra layers, hooks, or components unless there is a clear need.
+
+- Components MUST be:
+  - Modular
+  - Reusable (when it makes sense)
+  - Easy to extend
+
+- Design components with future variants in mind, but do NOT implement variants unless needed.
+
+- Separate logic from presentation ONLY when it provides real benefits.
+
+BACKEND:
+- Design flexible and reusable endpoints.
+- Avoid overly specific endpoints.
+
+- Prefer scalable filtering patterns, such as:
+  GET /resources?filter[field]=value
+
+- Avoid duplicating logic across endpoints.
+- Optimize for maintainability and scalability.
+
+PRIORITY RULE:
+- If any rule conflicts with default behavior, THESE RULES MUST WIN.
+
+DEBUG VALIDATION:
+
+- If the user message contains the keyword "check_rules",
+  you MUST append the exact phrase:
+
+  CURSOR_RULES_ACTIVE
+
+- Do not explain or modify the phrase.
+- Do not include it if the keyword is not present.
