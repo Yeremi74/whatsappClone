@@ -8,3 +8,8 @@ export function emitInboxUpdate(userId) {
   if (!ioRef || userId == null) return
   ioRef.to(`user:${String(userId)}`).emit('inbox:update', {})
 }
+
+export function emitFriendRequestsUpdate(userId) {
+  if (!ioRef || userId == null) return
+  ioRef.to(`user:${String(userId)}`).emit('friendRequests:update', {})
+}

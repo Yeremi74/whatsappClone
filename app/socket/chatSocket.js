@@ -78,7 +78,7 @@ export function setupChatSocket(io) {
       socket.leave(roomName(String(conversationId)));
     });
 
-    socket.on('sendMessage', async ({ conversationId, content, attachments }) => {
+    socket.on('sendMessage', async ({ conversationId, content, attachments, kind }) => {
       const cid = conversationId != null ? String(conversationId) : '';
       const trimmed =
         typeof content === 'string' ? content.trim().slice(0, 8000) : '';
@@ -104,7 +104,8 @@ export function setupChatSocket(io) {
         conversationId: conv._id,
         senderId: socket.userId,
         content: trimmed || '\u200b',
-        attachments: attachmentList
+        attachments: attachmentList,
+        kind: kind
       });
 
       await Conversation.findByIdAndUpdate(conv._id, {

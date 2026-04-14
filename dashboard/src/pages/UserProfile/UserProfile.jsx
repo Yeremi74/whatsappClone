@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useDashboard } from '../../context/DashboardContext'
 import { getUserById, getCurrentUser } from '../../actions/userActions'
 import styles from './UserProfile.module.css'
 import {
@@ -11,9 +11,8 @@ import {
   rejectFriendRequest
 } from '../../actions/friendRequest'
 
-const UserProfile = () => {
-  const { id } = useParams()
-  const navigate = useNavigate()
+const UserProfile = ({ userId }) => {
+  const { clearMain, openChat } = useDashboard()
   const { t } = useTranslation()
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -46,11 +45,11 @@ const UserProfile = () => {
 
   useEffect(() => {
     setActionError(null)
-  }, [id])
+  }, [userId])
 
   useEffect(() => {
     const loadUser = async () => {
-      if (!id) {
+      if (!userId) {
         setError(t('userProfile.errors.invalidId'))
         setIsLoading(false)
         return
@@ -60,7 +59,7 @@ const UserProfile = () => {
       setError(null)
 
       try {
-        const result = await getUserById(id)
+        const result = await getUserById(userId)
         if (result.success) {
           setUser(result.data)
         } else {
@@ -74,7 +73,7 @@ const UserProfile = () => {
     }
 
     loadUser()
-  }, [id, t])
+  }, [userId, t])
 
   const isOwnProfile =
     me && user && String(me._id) === String(user._id)
@@ -202,7 +201,7 @@ const UserProfile = () => {
         <div className={styles.errorMessage}>{error}</div>
         <button
           className={styles.backButton}
-          onClick={() => navigate('/')}
+          onClick={() => clearMain()}
         >
           {t('userProfile.backButton')}
         </button>
@@ -218,7 +217,7 @@ const UserProfile = () => {
         </div>
         <button
           className={styles.backButton}
-          onClick={() => navigate('/')}
+          onClick={() => clearMain()}
         >
           {t('userProfile.backButton')}
         </button>
@@ -234,7 +233,7 @@ const UserProfile = () => {
       <div className={styles.profileCard}>
         <button
           className={styles.backButton}
-          onClick={() => navigate('/')}
+          onClick={() => clearMain()}
         >
           {t('userProfile.backButton')}
         </button>
@@ -272,7 +271,7 @@ const UserProfile = () => {
                 <button
                   type="button"
                   className={styles.primaryButton}
-                  onClick={() => navigate(`/chat/${user._id}`)}
+                  onClick={() => openChat(user._id)}
                 >
                   {t('userProfile.openChat')}
                 </button>

@@ -7,6 +7,8 @@
   background: var(--color-card-background);
   border-right: 1px solid var(--color-border);
   overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 
 .rail {
@@ -92,7 +94,7 @@
   width: 100%;
   padding: 10px 6px;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   background: transparent;
   color: inherit;
   font-size: 10px;
@@ -113,8 +115,9 @@
 
 .railBtnActive {
   background: var(--color-surface-hover);
-  color: var(--color-nav-cta);
-  box-shadow: inset 2px 0 0 0 var(--color-nav-cta);
+  color: black;
+  border-radius: 999px;
+  
 }
 
 .railBtnLabel {
@@ -289,7 +292,7 @@
 }
 
 [data-theme="dark"] .rail {
-  background: #0c0c0e;
+  background: #161717;
   color: #a1a1aa;
 }
 
@@ -305,8 +308,8 @@
 }
 
 [data-theme="light"] .brandMark:hover {
-  border-color: var(--color-nav-cta);
-  color: var(--color-nav-cta);
+  border-color: black;
+  color: black;
 }
 
 [data-theme="light"] .railBtn:hover {
@@ -315,8 +318,8 @@
 }
 
 [data-theme="light"] .railBtnActive {
-  background: #f4f4f5;
-  color: var(--color-nav-cta);
+  background: #c6c6c64c;
+  color: black;
 }
 
 [data-theme="dark"] .brandMark {
@@ -325,8 +328,8 @@
 }
 
 [data-theme="dark"] .brandMark:hover {
-  border-color: var(--color-nav-cta);
-  color: var(--color-nav-cta);
+  border-color: white;
+  color: white;
 }
 
 [data-theme="dark"] .railBtn:hover {
@@ -336,5 +339,53 @@
 
 [data-theme="dark"] .railBtnActive {
   background: #18181b;
-  color: var(--color-nav-cta);
+  color: white;
+  background-color: #50525284;
+  
+}
+
+@media (max-width: 649px) {
+  .rail {
+    z-index: 60;
+  }
+
+  .subPanelBackdrop {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: var(--navbar-rail-width, 64px);
+    z-index: 50;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .subPanel {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: var(--navbar-rail-width, 64px);
+    z-index: 55;
+    width: min(300px, calc(100vw - var(--navbar-rail-width, 64px)));
+    min-width: 0;
+    max-width: 300px;
+    border-right: 1px solid var(--color-border);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease, visibility 0.2s;
+  }
+
+  .subPanelMobileClosed {
+    transform: translateX(-100%);
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .subPanelMobileOpen {
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+  }
 }

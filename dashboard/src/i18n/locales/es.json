@@ -77,7 +77,9 @@
     "loadError": "No se pudieron cargar los contactos",
     "networkError": "Error de conexión",
     "findPeople": "Buscar personas",
-    "searchPlaceholder": "Buscar por nombre..."
+    "searchPlaceholder": "Buscar por nombre...",
+    "contextMenuRemoveContact": "Eliminar contacto",
+    "contextMenuRemovingContact": "Eliminando…"
   },
   "navbar": {
     "brand": "Inicio",
@@ -90,6 +92,7 @@
     "languageEn": "English",
     "searchUsers": "Buscar usuarios",
     "friendRequestPreview": "Solicitud de amistad",
+    "closePanel": "Cerrar panel",
     "options": "Opciones",
     "profile": "Perfil",
     "logout": "Cerrar sesión",
@@ -98,7 +101,12 @@
     "loadingRequests": "Cargando solicitudes...",
     "noFriendRequests": "No tienes solicitudes de amistad pendientes",
     "accept": "Aceptar",
-    "reject": "Rechazar"
+    "reject": "Rechazar",
+    "contextMenuChat": "Chatear",
+    "contextMenuViewProfile": "Ver perfil",
+    "contextMenuCopyEmail": "Copiar correo",
+    "contextMenuRemoveRequest": "Eliminar solicitud de amistad",
+    "contextMenuRemoving": "Eliminando…"
   },
   "profile": {
     "title": "Mi Perfil",
@@ -170,7 +178,11 @@
     "networkError": "Error de conexión",
     "noMessagesYet": "Sin mensajes aún",
     "previewYou": "Tú",
-    "unreadCount": "{{count}} mensajes sin leer"
+    "unreadCount": "{{count}} mensajes sin leer",
+    "contextMenuMarkRead": "Marcar como leído",
+    "contextMenuMarkingRead": "Marcando…",
+    "contextMenuDeleteConversation": "Eliminar conversación",
+    "contextMenuDeletingConversation": "Eliminando…"
   },
   "chat": {
     "back": "Volver",
@@ -200,6 +212,7 @@
     "fileTypeVideo": "Vídeo",
     "fileTypeImage": "Imagen",
     "fileTypeText": "Texto",
-    "fileTypeGeneric": "Archivo"
+    "fileTypeGeneric": "Archivo",
+    "openPeerProfile": "Ver información del usuario"
   }
 }

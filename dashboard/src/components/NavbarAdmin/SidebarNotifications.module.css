@@ -55,7 +55,6 @@
 
 .rowActive {
   background: var(--color-surface-hover);
-  box-shadow: inset 2px 0 0 0 var(--color-nav-cta);
 }
 
 .avatar {
@@ -99,4 +98,47 @@
 .rowPreview {
   font-size: 12px;
   color: var(--color-text-secondary);
+}
+
+.contextMenu {
+  position: fixed;
+  z-index: 10000;
+  min-width: 188px;
+  padding: 6px 0;
+  margin: 0;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--color-text-primary) 12%, transparent);
+}
+
+.ctxItem {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.ctxItem:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.ctxItem:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.ctxItemDanger {
+  color: var(--color-danger, #c62828);
+}
+
+.ctxItemDanger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-danger, #c62828) 12%, transparent);
 }

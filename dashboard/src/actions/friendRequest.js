@@ -55,6 +55,20 @@ export const getFriendRequestStatus = async (userId) => {
   }
 }
 
+export const removeFriend = async (peerUserId) => {
+  try {
+    const response = await api.delete(
+      `/friend-requests/friends/${encodeURIComponent(String(peerUserId))}`
+    )
+    return response.data
+  } catch (error) {
+    if (error.response?.data) {
+      return error.response.data
+    }
+    throw error
+  }
+}
+
 export const cancelFriendRequest = async (requestId) => {
   try {
     const response = await api.delete(

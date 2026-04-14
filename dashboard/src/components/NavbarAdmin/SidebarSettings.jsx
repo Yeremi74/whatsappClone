@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useDashboard } from '../../context/DashboardContext'
 import ThemeToggle from '../ThemeToggle/ThemeToggle'
 import styles from './SidebarSettings.module.css'
 
@@ -37,7 +37,7 @@ const LanguageFlag = ({ code, className }) =>
 
 const SidebarSettings = () => {
   const { t, i18n } = useTranslation()
-  const navigate = useNavigate()
+  const { openProfile, setAsideSection } = useDashboard()
   const currentLng = i18n.language?.startsWith('en') ? 'en' : 'es'
   const [open, setOpen] = useState(false)
   const wrapRef = useRef(null)
@@ -142,7 +142,10 @@ const SidebarSettings = () => {
       <button
         type="button"
         className={styles.profileButton}
-        onClick={() => navigate('/profile')}
+        onClick={() => {
+          setAsideSection('settings')
+          openProfile()
+        }}
       >
         {t('navbar.profile')}
       </button>

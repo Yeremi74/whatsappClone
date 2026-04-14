@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useDashboard } from '../../context/DashboardContext'
 import { io } from 'socket.io-client'
 import {
   openConversationWithUser,
@@ -235,9 +235,8 @@ const fileDisplayInfo = (mime, fileName, t) => {
   }
 }
 
-const ChatRoom = () => {
-  const { userId } = useParams()
-  const navigate = useNavigate()
+const ChatRoom = ({ userId }) => {
+  const { clearMain, openUserProfile } = useDashboard()
   const { t } = useTranslation()
   const [me, setMe] = useState(null)
   const [peer, setPeer] = useState(null)
@@ -253,6 +252,15 @@ const ChatRoom = () => {
   const [pendingAttachment, setPendingAttachment] = useState(null)
   const [composerError, setComposerError] = useState(null)
   const [mineMediaBubbleWidthPx, setMineMediaBubbleWidthPx] = useState({})
+  const [previewPopup, setPreviewPopup] = useState('')
+  const containerRef = useRef(null)
+  const imgRef = useRef(null)
+  const [zoom, setZoom] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const dragRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 })
+  
+
   const listRef = useRef(null)
   const typingClearRef = useRef(null)
   const typingEmitRef = useRef(null)
@@ -385,12 +393,102 @@ const ChatRoom = () => {
           return
         }
         e.preventDefault()
-        navigate('/chats')
+        clearMain()
       }
     }
     window.addEventListener('keydown', onDocKeyDown)
     return () => window.removeEventListener('keydown', onDocKeyDown)
-  }, [navigate, attachMenuOpen, emojiOpen])
+  }, [clearMain, attachMenuOpen, emojiOpen])
+
+
+  useEffect(() => {
+    if (!previewPopup) return
+    
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setPreviewPopup(null)
+      }
+    }
+    
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [previewPopup])
+  
+
+// Función para calcular límites máximos de movimiento
+const getBounds = useCallback(() => {
+  if (!containerRef.current || !imgRef.current || zoom <= 1) {
+    return { minX: 0, maxX: 0, minY: 0, maxY: 0 }
+  }
+  const c = containerRef.current.getBoundingClientRect()
+  const i = imgRef.current.getBoundingClientRect()
+  const overflowX = Math.max(0, (i.width - c.width) / 2)
+  const overflowY = Math.max(0, (i.height - c.height) / 2)
+  return { minX: -overflowX, maxX: overflowX, minY: -overflowY, maxY: overflowY }
+}, [zoom])
+
+const clampPan = (px, py) => {
+  const b = getBounds()
+  return {
+    x: Math.min(Math.max(px, b.minX), b.maxX),
+    y: Math.min(Math.max(py, b.minY), b.maxY)
+  }
+}
+
+// Zoom con rueda
+const handleWheel = (e) => {
+  e.preventDefault()
+  e.stopPropagation()
+  if (!containerRef.current) return
+
+  const delta = -e.deltaY * 0.003 // Ajusta sensibilidad
+  const newZoom = Math.min(Math.max(zoom * (1 + delta), 1), 5)
+  const rect = containerRef.current.getBoundingClientRect()
+  const mx = e.clientX - rect.left - rect.width / 2
+  const my = e.clientY - rect.top - rect.height / 2
+  const scale = newZoom / zoom
+
+  const newPan = clampPan(
+    pan.x * scale + mx * (1 - scale),
+    pan.y * scale + my * (1 - scale)
+  )
+
+  setZoom(newZoom)
+  setPan(newPan)
+}
+
+// Arrastre
+const handlePointerDown = (e) => {
+  if (zoom <= 1 || e.button !== 0) return
+  setIsDragging(true)
+  dragRef.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y }
+  e.preventDefault()
+}
+
+const handlePointerMove = (e) => {
+  if (!isDragging) return
+  const dx = e.clientX - dragRef.current.x
+  const dy = e.clientY - dragRef.current.y
+  setPan(clampPan(dragRef.current.panX + dx, dragRef.current.panY + dy))
+}
+
+const handlePointerUp = () => setIsDragging(false)
+
+// Doble click para alternar zoom
+const handleDoubleClick = () => {
+  const nextZoom = zoom === 1 ? 2.5 : 1
+  setZoom(nextZoom)
+  setPan({ x: 0, y: 0 })
+}
+
+// Resetear al cerrar
+useEffect(() => {
+  if (!previewPopup) {
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
+    setIsDragging(false)
+  }
+}, [previewPopup])
 
   useEffect(() => {
     const onDown = (e) => {
@@ -504,6 +602,7 @@ const ChatRoom = () => {
     reader.onload = () => {
       const dataUrl = typeof reader.result === 'string' ? reader.result : ''
       if (!dataUrl) return
+      console.log('kind',kind)
       setPendingAttachment({
         name: file.name,
         dataUrl,
@@ -539,11 +638,19 @@ const ChatRoom = () => {
         contentOut += `\n\n${trimmed}`
       }
     }
-
+console.log('enviando esto: ',
+  {
+    conversationId,
+    content: contentOut,
+    attachments: urls,
+    kind: pendingAttachment?.kind
+  }
+)
     socket.emit('sendMessage', {
       conversationId,
       content: contentOut,
-      attachments: urls
+      attachments: urls,
+      kind: pendingAttachment?.kind
     })
     setDraft('')
     setPendingAttachment(null)
@@ -619,100 +726,121 @@ const ChatRoom = () => {
     }
     return ''
   }
+console.log('messages',messages)
+const renderBubbleContent = (m, opts) => {
+  const onImageLoad = opts?.onImageLoad
+  const attachments = Array.isArray(m.attachments) ? m.attachments : []
+  
+  // FIX: Si kind es 'file', forzamos que todo vaya a 'others' ignorando si es imagen
+  const imgs = attachments.filter((a) => {
+    if (typeof a !== 'string') return false
+    if (m.kind === 'file') return false
+    return isImageAttachment(a)
+  })
 
-  const renderBubbleContent = (m, opts) => {
-    const onImageLoad = opts?.onImageLoad
-    const attachments = Array.isArray(m.attachments) ? m.attachments : []
-    const imgs = attachments.filter(
-      (a) => typeof a === 'string' && isImageAttachment(a)
-    )
-    const others = attachments.filter(
-      (a) => typeof a === 'string' && !isImageAttachment(a)
-    )
-    const raw = typeof m.content === 'string' ? m.content : ''
-    const plain = plainMessageText(raw)
-    const { docName, caption } = parseDocContent(raw)
-    const hasRichDoc =
-      others.length > 0 && imgs.length === 0 && Boolean(docName)
+  const others = attachments.filter((a) => {
+    if (typeof a !== 'string') return false
+    if (m.kind === 'file') return true
+    return !isImageAttachment(a)
+  })
 
-    if (imgs.length === 0 && others.length === 0) {
-      return plain ? (
-        <span className={styles.bubbleText}>{plain}</span>
-      ) : null
-    }
+  const raw = typeof m.content === 'string' ? m.content : ''
+  const plain = plainMessageText(raw)
+  const { docName, caption } = parseDocContent(raw)
+  const hasRichDoc = others.length > 0 && imgs.length === 0 && Boolean(docName)
 
-    const bottomText = hasRichDoc ? caption : plain
-
-    return (
-      <>
-        {imgs.map((url, i) => (
-          <img
-            key={`img-${String(m._id)}-${i}`}
-            className={styles.bubbleImg}
-            src={url}
-            alt=""
-            onLoad={onImageLoad}
-          />
-        ))}
-        {others.map((url, i) => {
-          const fileLabel =
-            i === 0 && docName ? docName : `file-${i + 1}`
-          if (hasRichDoc) {
-            const meta = dataUrlMeta(url)
-            const info = fileDisplayInfo(meta.mime, fileLabel, t)
-            const Icon = info.Icon
-            return (
-              <div
-                key={`doc-${String(m._id)}-${i}`}
-                className={styles.docCard}
-              >
-                <div className={styles.docIconWrap}>
-                  <Icon className={info.iconClass} aria-hidden />
-                </div>
-                <div className={styles.docBody}>
-                  <span className={styles.docName}>{fileLabel}</span>
-                  <span className={styles.docMeta}>
-                    {info.typeLabel} · {formatFileSize(meta.size)}
-                  </span>
-                </div>
-                <a
-                  className={styles.docDownload}
-                  href={url}
-                  download={fileLabel}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={t('chat.download')}
-                  title={t('chat.download')}
-                >
-                  <IoArrowDownOutline className={styles.docDownloadIcon} aria-hidden />
-                </a>
-              </div>
-            )
-          }
-          return (
-            <a
-              key={`a-${String(m._id)}-${i}`}
-              className={styles.bubbleAttach}
-              href={url}
-              download={docName && i === 0 ? docName : `file-${i + 1}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {docName && i === 0 ? docName : t('chat.downloadFile')}
-            </a>
-          )
-        })}
-        {bottomText ? (
-          <span className={styles.bubbleText}>{bottomText}</span>
-        ) : null}
-      </>
-    )
+  if (imgs.length === 0 && others.length === 0) {
+    return plain ? (
+      <span className={styles.bubbleText}>{plain}</span>
+    ) : null
   }
+
+  const bottomText = hasRichDoc ? caption : plain
+
+  return (
+    <>
+      {m.kind === 'image' && imgs.map((url, i) => (
+        <img
+          key={`img-${String(m._id)}-${i}`}
+          className={styles.bubbleImg}
+          src={url}
+          alt=""
+          onLoad={onImageLoad}
+          onClick={() => setPreviewPopup(url)}
+        />
+      ))}
+      {others.map((url, i) => {
+        const fileLabel = i === 0 && docName ? docName : `file-${i + 1}`
+        
+        if (m.kind === 'file') {
+          const meta = dataUrlMeta(url)
+          const info = fileDisplayInfo(meta.mime, fileLabel, t)
+          const Icon = info.Icon
+          return (
+            <div key={`doc-${String(m._id)}-${i}`} className={styles.docCard}>
+              <div className={styles.docIconWrap}>
+                <Icon className={info.iconClass} aria-hidden />
+              </div>
+              <div className={styles.docBody}>
+                <span className={styles.docName}>{fileLabel}</span>
+                <span className={styles.docMeta}>
+                  {info.typeLabel} · {formatFileSize(meta.size)}
+                </span>
+              </div>
+              <a
+                className={styles.docDownload}
+                href={url}
+                download={fileLabel}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t('chat.download')}
+                title={t('chat.download')}
+              >
+                <IoArrowDownOutline className={styles.docDownloadIcon} aria-hidden />
+              </a>
+            </div>
+          )
+        }
+        
+        return (
+          <a
+            key={`a-${String(m._id)}-${i}`}
+            className={styles.bubbleAttach}
+            href={url}
+            download={docName && i === 0 ? docName : `file-${i + 1}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {docName && i === 0 ? docName : t('chat.downloadFile')}
+          </a>
+        )
+      })}
+      {bottomText ? (
+        <span className={styles.bubbleText}>{bottomText}</span>
+      ) : null}
+    </>
+  )
+}
 
   return (
     <div className={styles.layout}>
       <header className={styles.topBar}>
-        <div className={styles.peerBlock}>
+        <div
+          className={styles.peerBlock}
+          role="button"
+          tabIndex={0}
+          aria-label={t('chat.openPeerProfile')}
+          onClick={() => userId && openUserProfile(userId)}
+          onKeyDown={(e) => {
+            if (
+              userId &&
+              (e.key === 'Enter' || e.key === ' ')
+            ) {
+              e.preventDefault()
+              openUserProfile(userId)
+            }
+          }}
+        >
           {peer?.profilePicture ? (
             <img
               className={styles.peerAvatar}
@@ -741,7 +869,7 @@ const ChatRoom = () => {
           <button
             type="button"
             className={styles.retry}
-            onClick={() => navigate('/chats')}
+            onClick={() => clearMain()}
           >
             {t('chat.back')}
           </button>
@@ -796,7 +924,58 @@ const ChatRoom = () => {
               )
             })}
           </div>
+          {previewPopup && (
+  <div 
+    className={styles.previewOverlay} 
+    onClick={() => setPreviewPopup(null)}
+    role="dialog"
+    aria-modal="true"
+    aria-label="Vista previa de imagen"
+  >
+    <div 
+      className={styles.previewPopup} 
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className={styles.previewPopupHeader}>
+        <div className={styles.zoomControls}>
+          <button onClick={() => setZoom(p => Math.max(p - 0.25, 1))} aria-label="Menos zoom">➖</button>
+          <span className={styles.zoomLevel}>{Math.round(zoom * 100)}%</span>
+          <button onClick={() => setZoom(p => Math.min(p + 0.25, 5))} aria-label="Más zoom">➕</button>
+        </div>
+        <a href={previewPopup} download target="_blank" rel="noopener noreferrer" className={styles.previewBtn} aria-label="Descargar">⬇️</a>
+        <button type="button" className={styles.previewBtn} onClick={() => setPreviewPopup(null)} aria-label="Cerrar">✕</button>
+      </div>
 
+      <div 
+        ref={containerRef}
+        className={styles.previewContainer}
+        onWheel={handleWheel}
+        onDoubleClick={handleDoubleClick}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) setPreviewPopup(null)
+        }}
+        style={{ cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+      >
+        <img 
+          ref={imgRef}
+          src={previewPopup} 
+          alt="Vista previa" 
+          className={styles.previewImage}
+          draggable={false}
+          onClick={(e) => e.stopPropagation()}
+          style={{ 
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transition: isDragging ? 'none' : 'transform 0.15s ease-out'
+          }}
+        />
+      </div>
+    </div>
+  </div>
+)}
           <footer className={styles.composer}>
             {composerError && (
               <div className={styles.composerError}>{composerError}</div>

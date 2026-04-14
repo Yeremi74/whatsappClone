@@ -39,6 +39,11 @@ const messageSchema = new mongoose.Schema({
    updatedAt: {
     type: Date,
     default: Date.now
+   },
+   kind: {
+    type: String,
+    enum: ['text', 'image', 'file'],
+    default: 'text'
    }
 });
 

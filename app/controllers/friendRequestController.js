@@ -1,6 +1,10 @@
+import mongoose from 'mongoose';
 import FriendRequest from '../models/FriendRequest.js';
 import User from '../models/User.js';
+import Conversation from '../models/Conversation.js';
+import Message from '../models/Message.js';
 import jwt from 'jsonwebtoken';
+import { emitFriendRequestsUpdate, emitInboxUpdate } from '../socket/socketBus.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-cambiar-en-produccion';
 
@@ -82,6 +86,8 @@ const createFriendRequest = async (req, res) => {
     await friendRequest.save();
     await friendRequest.populate('from', 'name email profilePicture');
     await friendRequest.populate('to', 'name email profilePicture');
+
+    emitFriendRequestsUpdate(userId);
 
     res.status(201).json({ 
       success: true, 
@@ -170,6 +176,8 @@ const acceptFriendRequest = async (req, res) => {
     await friendRequest.populate('from', 'name email profilePicture');
     await friendRequest.populate('to', 'name email profilePicture');
 
+    emitFriendRequestsUpdate(currentUserId);
+
     res.json({ 
       success: true, 
       data: friendRequest 
@@ -222,6 +230,8 @@ const rejectFriendRequest = async (req, res) => {
     friendRequest.status = 'rejected';
     friendRequest.updatedAt = new Date();
     await friendRequest.save();
+
+    emitFriendRequestsUpdate(currentUserId);
 
     res.json({ 
       success: true, 
@@ -330,6 +340,81 @@ const getFriends = async (req, res) => {
   }
 };
 
+const removeFriend = async (req, res) => {
+  try {
+    const currentUserId = getUserIdFromToken(req);
+
+    if (!currentUserId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Token de autenticación requerido'
+      });
+    }
+
+    const rawPeer = req.params.peerUserId != null ? String(req.params.peerUserId).trim() : '';
+    if (!rawPeer || !mongoose.Types.ObjectId.isValid(rawPeer)) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID de usuario inválido'
+      });
+    }
+
+    if (String(currentUserId) === rawPeer) {
+      return res.status(400).json({
+        success: false,
+        error: 'No puedes eliminar tu propio contacto'
+      });
+    }
+
+    const peerExists = await User.findById(rawPeer).select('_id');
+    if (!peerExists) {
+      return res.status(404).json({
+        success: false,
+        error: 'Usuario no encontrado'
+      });
+    }
+
+    const friendRequest = await FriendRequest.findOne({
+      status: 'accepted',
+      $or: [
+        { from: currentUserId, to: rawPeer },
+        { from: rawPeer, to: currentUserId }
+      ]
+    });
+
+    if (!friendRequest) {
+      return res.status(404).json({
+        success: false,
+        error: 'No existe relación de amistad con este usuario'
+      });
+    }
+
+    const conv = await Conversation.findOne({
+      users: { $all: [currentUserId, rawPeer], $size: 2 }
+    });
+
+    if (conv) {
+      await Message.deleteMany({ conversationId: conv._id });
+      await Conversation.findByIdAndDelete(conv._id);
+    }
+
+    await FriendRequest.findByIdAndDelete(friendRequest._id);
+
+    emitInboxUpdate(currentUserId);
+    emitInboxUpdate(rawPeer);
+
+    res.json({
+      success: true,
+      message: 'Contacto eliminado'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
 const cancelFriendRequest = async (req, res) => {
   try {
     const currentUserId = getUserIdFromToken(req);
@@ -366,7 +451,10 @@ const cancelFriendRequest = async (req, res) => {
       });
     }
 
+    const recipientId = friendRequest.to.toString();
     await FriendRequest.findByIdAndDelete(requestId);
+
+    emitFriendRequestsUpdate(recipientId);
 
     res.json({
       success: true,
@@ -387,5 +475,6 @@ export {
   rejectFriendRequest,
   getFriendRequestStatus,
   getFriends,
+  removeFriend,
   cancelFriendRequest
 };

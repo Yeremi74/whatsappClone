@@ -19,4 +19,6 @@
   flex-direction: column;
   overflow: hidden;
   background: transparent;
+  position: relative;
+  z-index: 0;
 }

@@ -1,13 +1,28 @@
-import React, { useEffect, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
+import { useDashboard } from '../../context/DashboardContext'
 import { io } from 'socket.io-client'
-import { listConversations } from '../../actions/conversationActions'
+import {
+  listConversations,
+  markConversationRead,
+  deleteConversation
+} from '../../actions/conversationActions'
 import styles from './SidebarConversations.module.css'
 
+const MENU_PAD = 8
+const MENU_FRAME = 12
+const MENU_ITEM_H = 40
+
+const menuHeightForItems = (n) => MENU_FRAME + n * MENU_ITEM_H
+
 const SidebarConversations = ({ activeUserId }) => {
-  const navigate = useNavigate()
+  const { openChat, openUserProfile, clearMain } = useDashboard()
   const { t } = useTranslation()
+  const [menu, setMenu] = useState(null)
+  const [markingId, setMarkingId] = useState(null)
+  const [deletingConvId, setDeletingConvId] = useState(null)
+  const menuRef = useRef(null)
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -55,6 +70,100 @@ const SidebarConversations = ({ activeUserId }) => {
     }
   }, [load])
 
+  const closeMenu = useCallback(() => {
+    setMenu(null)
+  }, [])
+
+  useEffect(() => {
+    if (!menu) return undefined
+    const onPointer = (e) => {
+      if (menuRef.current?.contains(e.target)) return
+      closeMenu()
+    }
+    const onKey = (e) => {
+      if (e.key === 'Escape') closeMenu()
+    }
+    const onScroll = () => closeMenu()
+    document.addEventListener('mousedown', onPointer)
+    document.addEventListener('keydown', onKey)
+    window.addEventListener('scroll', onScroll, true)
+    return () => {
+      document.removeEventListener('mousedown', onPointer)
+      document.removeEventListener('keydown', onKey)
+      window.removeEventListener('scroll', onScroll, true)
+    }
+  }, [menu, closeMenu])
+
+  const openMenu = (e, row) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const rawUnread = Number(row.unreadCount) || 0
+    const itemCount = 2 + (rawUnread > 0 ? 1 : 0) + 1
+    const h = menuHeightForItems(itemCount)
+    let x = e.clientX
+    let y = e.clientY
+    if (x + 200 + MENU_PAD > window.innerWidth) {
+      x = window.innerWidth - 200 - MENU_PAD
+    }
+    if (y + h + MENU_PAD > window.innerHeight) {
+      y = window.innerHeight - h - MENU_PAD
+    }
+    x = Math.max(MENU_PAD, x)
+    y = Math.max(MENU_PAD, y)
+    setMenu({ x, y, row })
+  }
+
+  const handleMenuChat = () => {
+    const other = menu?.row?.otherUser
+    const oid = other?._id != null ? String(other._id) : ''
+    closeMenu()
+    if (oid) openChat(oid)
+  }
+
+  const handleMenuProfile = () => {
+    const other = menu?.row?.otherUser
+    const oid = other?._id != null ? String(other._id) : ''
+    closeMenu()
+    if (oid) openUserProfile(oid)
+  }
+
+  const handleMenuMarkRead = async () => {
+    const cid = menu?.row?.conversationId
+    if (cid == null) return
+    const id = String(cid)
+    setMarkingId(id)
+    try {
+      const result = await markConversationRead(id)
+      if (result?.success) {
+        closeMenu()
+        load(true)
+      }
+    } finally {
+      setMarkingId(null)
+    }
+  }
+
+  const handleMenuDeleteConversation = async () => {
+    const cid = menu?.row?.conversationId
+    if (cid == null) return
+    const id = String(cid)
+    const other = menu?.row?.otherUser
+    const oid = other?._id != null ? String(other._id) : ''
+    setDeletingConvId(id)
+    try {
+      const result = await deleteConversation(id)
+      if (result?.success) {
+        closeMenu()
+        await load(true)
+        if (oid && activeUserId && String(activeUserId) === oid) {
+          clearMain()
+        }
+      }
+    } finally {
+      setDeletingConvId(null)
+    }
+  }
+
   if (loading) {
     return <p className={styles.hint}>{t('chats.loading')}</p>
   }
@@ -67,8 +176,56 @@ const SidebarConversations = ({ activeUserId }) => {
     return <p className={styles.empty}>{t('chats.empty')}</p>
   }
 
+  const menuRow = menu?.row
+  const menuRawUnread = menuRow ? Number(menuRow.unreadCount) || 0 : 0
+  const menuConvId =
+    menuRow?.conversationId != null ? String(menuRow.conversationId) : ''
+
+  const menuEl =
+    menu &&
+    createPortal(
+      <div
+        ref={menuRef}
+        className={styles.contextMenu}
+        style={{ left: menu.x, top: menu.y }}
+        role="menu"
+      >
+        <button type="button" className={styles.ctxItem} role="menuitem" onClick={handleMenuChat}>
+          {t('navbar.contextMenuChat')}
+        </button>
+        {menuRawUnread > 0 ? (
+          <button
+            type="button"
+            className={styles.ctxItem}
+            role="menuitem"
+            disabled={markingId === menuConvId}
+            onClick={handleMenuMarkRead}
+          >
+            {markingId === menuConvId ? t('chats.contextMenuMarkingRead') : t('chats.contextMenuMarkRead')}
+          </button>
+        ) : null}
+        <button type="button" className={styles.ctxItem} role="menuitem" onClick={handleMenuProfile}>
+          {t('navbar.contextMenuViewProfile')}
+        </button>
+        <button
+          type="button"
+          className={`${styles.ctxItem} ${styles.ctxItemDanger}`}
+          role="menuitem"
+          disabled={deletingConvId === menuConvId}
+          onClick={handleMenuDeleteConversation}
+        >
+          {deletingConvId === menuConvId
+            ? t('chats.contextMenuDeletingConversation')
+            : t('chats.contextMenuDeleteConversation')}
+        </button>
+      </div>,
+      document.body
+    )
+
   return (
-    <ul className={styles.list}>
+    <>
+      {menuEl}
+      <ul className={styles.list}>
       {items.map((row) => {
         const other = row.otherUser
         const name = other?.name || '—'
@@ -105,7 +262,8 @@ const SidebarConversations = ({ activeUserId }) => {
             <button
               type="button"
               className={rowClass}
-              onClick={() => oid && navigate(`/chat/${oid}`)}
+              onClick={() => oid && openChat(oid)}
+              onContextMenu={(e) => openMenu(e, row)}
             >
               {other?.profilePicture ? (
                 <img
@@ -132,6 +290,7 @@ const SidebarConversations = ({ activeUserId }) => {
         )
       })}
     </ul>
+    </>
   )
 }
 

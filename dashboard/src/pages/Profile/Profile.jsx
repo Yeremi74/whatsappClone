@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 import FormGroup from '../../components/FormGroup/FormGroup'
+import { useDashboard } from '../../context/DashboardContext'
 import { getCurrentUser, updateCurrentUser } from '../../actions/userActions'
 import { IoCameraOutline, IoTrashOutline } from 'react-icons/io5'
 import styles from './Profile.module.css'
@@ -48,7 +48,7 @@ const compressImageFile = (file) =>
 
 const Profile = () => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
+  const { clearMain } = useDashboard()
   const fileInputRef = useRef(null)
 
   const [formData, setFormData] = useState({
@@ -351,7 +351,7 @@ const Profile = () => {
             <button
               type="button"
               className={styles.cancelButton}
-              onClick={() => navigate('/')}
+              onClick={() => clearMain()}
               disabled={isLoading}
             >
               {t('profile.cancelButton')}

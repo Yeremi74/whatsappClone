@@ -77,7 +77,9 @@
     "loadError": "Could not load contacts",
     "networkError": "Connection error",
     "findPeople": "Find people",
-    "searchPlaceholder": "Search by name..."
+    "searchPlaceholder": "Search by name...",
+    "contextMenuRemoveContact": "Remove contact",
+    "contextMenuRemovingContact": "Removing…"
   },
   "navbar": {
     "brand": "Home",
@@ -90,6 +92,7 @@
     "languageEn": "English",
     "searchUsers": "Search users",
     "friendRequestPreview": "Friend request",
+    "closePanel": "Close panel",
     "options": "Options",
     "profile": "Profile",
     "logout": "Log out",
@@ -98,7 +101,12 @@
     "loadingRequests": "Loading requests...",
     "noFriendRequests": "You have no pending friend requests",
     "accept": "Accept",
-    "reject": "Reject"
+    "reject": "Reject",
+    "contextMenuChat": "Chat",
+    "contextMenuViewProfile": "View profile",
+    "contextMenuCopyEmail": "Copy email",
+    "contextMenuRemoveRequest": "Remove friend request",
+    "contextMenuRemoving": "Removing…"
   },
   "profile": {
     "title": "My Profile",
@@ -170,7 +178,11 @@
     "networkError": "Connection error",
     "noMessagesYet": "No messages yet",
     "previewYou": "You",
-    "unreadCount": "{{count}} unread messages"
+    "unreadCount": "{{count}} unread messages",
+    "contextMenuMarkRead": "Mark as read",
+    "contextMenuMarkingRead": "Marking…",
+    "contextMenuDeleteConversation": "Delete conversation",
+    "contextMenuDeletingConversation": "Deleting…"
   },
   "chat": {
     "back": "Back",
@@ -200,6 +212,7 @@
     "fileTypeVideo": "Video",
     "fileTypeImage": "Image",
     "fileTypeText": "Text",
-    "fileTypeGeneric": "File"
+    "fileTypeGeneric": "File",
+    "openPeerProfile": "View user profile"
   }
 }

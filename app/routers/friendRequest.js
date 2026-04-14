@@ -6,6 +6,7 @@ import {
   rejectFriendRequest,
   getFriendRequestStatus,
   getFriends,
+  removeFriend,
   cancelFriendRequest
 } from '../controllers/friendRequestController.js';
 
@@ -15,6 +16,7 @@ router.post('/', createFriendRequest);
 router.get('/received', getReceivedFriendRequests);
 router.get('/friends', getFriends);
 router.get('/status/:userId', getFriendRequestStatus);
+router.delete('/friends/:peerUserId', removeFriend);
 router.delete('/:requestId', cancelFriendRequest);
 router.put('/:requestId/accept', acceptFriendRequest);
 router.put('/:requestId/reject', rejectFriendRequest);

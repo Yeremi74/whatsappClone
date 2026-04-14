@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useDashboard } from '../../context/DashboardContext'
+import { io } from 'socket.io-client'
 import {
   getReceivedFriendRequests,
   acceptFriendRequest,
@@ -8,16 +9,15 @@ import {
 } from '../../actions/friendRequest'
 import styles from './NotificationDetail.module.css'
 
-const NotificationDetail = () => {
-  const { requestId } = useParams()
-  const navigate = useNavigate()
+const NotificationDetail = ({ requestId }) => {
+  const { clearMain, openUserProfile } = useDashboard()
   const { t } = useTranslation()
   const [request, setRequest] = useState(null)
   const [loading, setLoading] = useState(true)
   const [actionId, setActionId] = useState(null)
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const result = await getReceivedFriendRequests()
       if (result?.success && Array.isArray(result.data)) {
@@ -29,12 +29,28 @@ const NotificationDetail = () => {
     } catch {
       setRequest(null)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }, [requestId])
 
   useEffect(() => {
-    load()
+    load(false)
+  }, [load])
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) return undefined
+    const socket = io({
+      path: '/socket.io',
+      auth: { token },
+      transports: ['websocket', 'polling']
+    })
+    socket.on('friendRequests:update', () => {
+      load(true)
+    })
+    return () => {
+      socket.disconnect()
+    }
   }, [load])
 
   const from = request?.from
@@ -50,7 +66,7 @@ const NotificationDetail = () => {
     try {
       const result = await acceptFriendRequest(request._id)
       if (result?.success) {
-        navigate('/notifications', { replace: true })
+        clearMain()
       }
     } finally {
       setActionId(null)
@@ -63,7 +79,7 @@ const NotificationDetail = () => {
     try {
       const result = await rejectFriendRequest(request._id)
       if (result?.success) {
-        navigate('/notifications', { replace: true })
+        clearMain()
       }
     } finally {
       setActionId(null)
@@ -86,7 +102,7 @@ const NotificationDetail = () => {
           <button
             type="button"
             className={styles.back}
-            onClick={() => navigate('/notifications')}
+            onClick={() => clearMain()}
           >
             {t('notifications.backToList')}
           </button>
@@ -113,7 +129,7 @@ const NotificationDetail = () => {
               type="button"
               className={styles.nameLink}
               onClick={() => {
-                if (senderId) navigate(`/${senderId}`)
+                if (senderId) openUserProfile(senderId)
               }}
             >
               {senderName}

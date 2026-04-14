@@ -237,4 +237,59 @@ const markConversationRead = async (req, res) => {
   }
 };
 
-export { listConversations, openConversationWithUser, getMessages, markConversationRead };
+const deleteConversation = async (req, res) => {
+  try {
+    const currentUserId = getUserIdFromToken(req);
+    if (!currentUserId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Token de autenticación requerido'
+      });
+    }
+
+    const { conversationId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(conversationId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID de conversación inválido'
+      });
+    }
+
+    const conv = await Conversation.findOne({
+      _id: conversationId,
+      users: currentUserId
+    });
+
+    if (!conv) {
+      return res.status(404).json({
+        success: false,
+        error: 'Conversación no encontrada'
+      });
+    }
+
+    const peerUserId = conv.users
+      .map((u) => String(u))
+      .find((id) => id !== String(currentUserId));
+
+    await Message.deleteMany({ conversationId: conv._id });
+    await Conversation.findByIdAndDelete(conv._id);
+
+    emitInboxUpdate(currentUserId);
+    if (peerUserId) {
+      emitInboxUpdate(peerUserId);
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export {
+  listConversations,
+  openConversationWithUser,
+  getMessages,
+  markConversationRead,
+  deleteConversation
+};

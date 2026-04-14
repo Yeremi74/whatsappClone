@@ -1,6 +1,8 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react'
+import React, { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useLocation, useMatch } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { io } from 'socket.io-client'
+import { useDashboard } from '../../context/DashboardContext'
 import styles from './NavbarAdmin.module.css'
 import { logout } from '../../actions/authActions'
 import { getReceivedFriendRequests } from '../../actions/friendRequest'
@@ -60,28 +62,46 @@ const iconMore = (
   </svg>
 )
 
+const NARROW_BREAKPOINT_PX = 650
+
+function useNarrowViewport(maxWidthPx = NARROW_BREAKPOINT_PX) {
+  const [narrow, setNarrow] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(`(max-width: ${maxWidthPx - 1}px)`).matches : false
+  )
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${maxWidthPx - 1}px)`)
+    const handler = () => setNarrow(mq.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [maxWidthPx])
+  return narrow
+}
+
 const NavbarAdmin = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const location = useLocation()
-  const matchChat = useMatch('/chat/:userId')
-  const matchNotification = useMatch('/notifications/:requestId')
-  const activeChatUserId = matchChat?.params?.userId ?? null
-  const activeRequestId = matchNotification?.params?.requestId ?? null
+  const {
+    asideSection: section,
+    setAsideSection,
+    mainView,
+    openProfile,
+    clearMain,
+    resetDashboard
+  } = useDashboard()
+  const activeChatUserId =
+    mainView.type === 'chat' ? mainView.userId : null
+  const activeRequestId =
+    mainView.type === 'notification' ? mainView.requestId : null
 
   const [showOptionsMenu, setShowOptionsMenu] = useState(false)
   const [incomingFriendRequests, setIncomingFriendRequests] = useState([])
   const [incomingRequestsLoading, setIncomingRequestsLoading] = useState(false)
   const [contactsSearchOpen, setContactsSearchOpen] = useState(false)
+  const [mobileSubpanelOpen, setMobileSubpanelOpen] = useState(false)
   const optionsMenuRef = useRef(null)
-
-  const section = (() => {
-    const p = location.pathname
-    if (p.startsWith('/notifications')) return 'notifications'
-    if (p.startsWith('/settings') || p === '/profile') return 'settings'
-    if (p.startsWith('/contacts')) return 'contacts'
-    return 'chats'
-  })()
+  const sidebarRootRef = useRef(null)
+  const railRef = useRef(null)
+  const isNarrow = useNarrowViewport(NARROW_BREAKPOINT_PX)
 
   useEffect(() => {
     if (section !== 'contacts') {
@@ -89,12 +109,58 @@ const NavbarAdmin = () => {
     }
   }, [section])
 
-  const loadIncomingFriendRequests = useCallback(async () => {
+  useLayoutEffect(() => {
+    const rail = railRef.current
+    const root = sidebarRootRef.current
+    if (!rail || !root) return
+    const update = () => {
+      root.style.setProperty('--navbar-rail-width', `${rail.offsetWidth}px`)
+    }
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(rail)
+    return () => ro.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!isNarrow) {
+      setMobileSubpanelOpen(false)
+    }
+  }, [isNarrow])
+
+  useEffect(() => {
+    if (!isNarrow) return
+    if (
+      mainView.type === 'chat' ||
+      mainView.type === 'notification' ||
+      mainView.type === 'profile' ||
+      mainView.type === 'userProfile'
+    ) {
+      setMobileSubpanelOpen(false)
+    }
+  }, [isNarrow, mainView.type])
+
+  useEffect(() => {
+    if (!isNarrow || !mobileSubpanelOpen) return undefined
+    const onKey = (e) => {
+      if (e.key === 'Escape') setMobileSubpanelOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [isNarrow, mobileSubpanelOpen])
+
+  const openMobileSubpanel = () => {
+    if (isNarrow) setMobileSubpanelOpen(true)
+  }
+
+  const loadIncomingFriendRequests = useCallback(async (silent = false) => {
     if (!localStorage.getItem('token')) {
       setIncomingFriendRequests([])
       return
     }
-    setIncomingRequestsLoading(true)
+    if (!silent) {
+      setIncomingRequestsLoading(true)
+    }
     try {
       const result = await getReceivedFriendRequests()
       if (result?.success) {
@@ -105,13 +171,31 @@ const NavbarAdmin = () => {
     } catch {
       setIncomingFriendRequests([])
     } finally {
-      setIncomingRequestsLoading(false)
+      if (!silent) {
+        setIncomingRequestsLoading(false)
+      }
     }
   }, [])
 
   useEffect(() => {
-    loadIncomingFriendRequests()
-  }, [location.pathname, loadIncomingFriendRequests])
+    loadIncomingFriendRequests(false)
+  }, [loadIncomingFriendRequests])
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) return undefined
+    const socket = io({
+      path: '/socket.io',
+      auth: { token },
+      transports: ['websocket', 'polling']
+    })
+    socket.on('friendRequests:update', () => {
+      loadIncomingFriendRequests(true)
+    })
+    return () => {
+      socket.disconnect()
+    }
+  }, [loadIncomingFriendRequests])
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -127,25 +211,30 @@ const NavbarAdmin = () => {
 
   const handleProfileClick = () => {
     setShowOptionsMenu(false)
-    navigate('/profile')
+    setAsideSection('settings')
+    openProfile()
   }
 
   const handleLogoutClick = () => {
     setShowOptionsMenu(false)
     logout()
+    resetDashboard()
     navigate('/login', { replace: true })
   }
 
   const requestCount = incomingFriendRequests.length
 
   return (
-    <div className={styles.sidebarRoot}>
-      <nav className={styles.rail} aria-label="Main">
+    <div className={styles.sidebarRoot} ref={sidebarRootRef}>
+      <nav ref={railRef} className={styles.rail} aria-label="Main">
         <div className={styles.railTipWrap}>
           <button
             type="button"
             className={styles.brandMark}
-            onClick={() => navigate('/chats')}
+            onClick={() => {
+              setAsideSection('chats')
+              openMobileSubpanel()
+            }}
             aria-label={t('navbar.brand')}
           >
             {iconHome}
@@ -156,7 +245,10 @@ const NavbarAdmin = () => {
           <button
             type="button"
             className={section === 'chats' ? `${styles.railBtn} ${styles.railBtnActive}` : styles.railBtn}
-            onClick={() => navigate('/chats')}
+            onClick={() => {
+              setAsideSection('chats')
+              openMobileSubpanel()
+            }}
             aria-label={t('navbar.chats')}
           >
             {iconChats}
@@ -169,7 +261,10 @@ const NavbarAdmin = () => {
           <button
             type="button"
             className={section === 'contacts' ? `${styles.railBtn} ${styles.railBtnActive}` : styles.railBtn}
-            onClick={() => navigate('/contacts')}
+            onClick={() => {
+              setAsideSection('contacts')
+              openMobileSubpanel()
+            }}
             aria-label={t('navbar.contacts')}
           >
             {iconContacts}
@@ -182,7 +277,10 @@ const NavbarAdmin = () => {
           <button
             type="button"
             className={section === 'settings' ? `${styles.railBtn} ${styles.railBtnActive}` : styles.railBtn}
-            onClick={() => navigate('/settings')}
+            onClick={() => {
+              setAsideSection('settings')
+              openMobileSubpanel()
+            }}
             aria-label={t('navbar.settings')}
           >
             {iconSettings}
@@ -195,7 +293,10 @@ const NavbarAdmin = () => {
           <button
             type="button"
             className={section === 'notifications' ? `${styles.railBtn} ${styles.railBtnActive}` : styles.railBtn}
-            onClick={() => navigate('/notifications')}
+            onClick={() => {
+              setAsideSection('notifications')
+              openMobileSubpanel()
+            }}
             aria-label={t('navbar.notifications')}
           >
             {iconBell}
@@ -237,7 +338,23 @@ const NavbarAdmin = () => {
           )}
         </div>
       </nav>
-      <aside className={styles.subPanel} aria-label="Secondary">
+      {isNarrow && mobileSubpanelOpen && (
+        <button
+          type="button"
+          className={styles.subPanelBackdrop}
+          aria-label={t('navbar.closePanel')}
+          onClick={() => setMobileSubpanelOpen(false)}
+        />
+      )}
+      <aside
+        className={
+          isNarrow
+            ? `${styles.subPanel} ${mobileSubpanelOpen ? styles.subPanelMobileOpen : styles.subPanelMobileClosed}`
+            : styles.subPanel
+        }
+        aria-label="Secondary"
+        aria-hidden={isNarrow && !mobileSubpanelOpen ? true : undefined}
+      >
         <div className={styles.subPanelHeader}>
           {section === 'chats' && <h2 className={styles.subPanelTitle}>{t('chats.title')}</h2>}
           {section === 'contacts' && (
@@ -280,6 +397,12 @@ const NavbarAdmin = () => {
               requests={incomingFriendRequests}
               loading={incomingRequestsLoading}
               activeRequestId={activeRequestId}
+              onFriendRequestRejected={(requestId) => {
+                loadIncomingFriendRequests(true)
+                if (activeRequestId && String(activeRequestId) === String(requestId)) {
+                  clearMain()
+                }
+              }}
             />
           )}
           {section === 'settings' && <SidebarSettings />}

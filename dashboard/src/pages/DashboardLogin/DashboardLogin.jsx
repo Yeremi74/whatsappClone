@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, Link, useNavigate } from 'react-router-dom'
+import { useDashboard } from '../../context/DashboardContext'
 import FormGroup from '../../components/FormGroup/FormGroup'
 import ThemeToggle from '../../components/ThemeToggle/ThemeToggle'
 import { register, login } from '../../actions/authActions'
@@ -10,6 +11,7 @@ const DashboardLogin = () => {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
+  const { resetDashboard } = useDashboard()
   const isRegisterPage = location.pathname === '/register'
   
   const [formData, setFormData] = useState({
@@ -144,6 +146,7 @@ const DashboardLogin = () => {
             confirmPassword: ''
           })
           setTimeout(() => {
+            resetDashboard()
             navigate('/')
           }, 1000)
         } else {

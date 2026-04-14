@@ -83,3 +83,18 @@ export const markConversationRead = async (conversationId) => {
     throw error
   }
 }
+
+export const deleteConversation = async (conversationId) => {
+  try {
+    await api.delete(`/conversations/${encodeURIComponent(String(conversationId))}`)
+    return { success: true }
+  } catch (error) {
+    if (error.response) {
+      return {
+        success: false,
+        error: error.response.data?.error
+      }
+    }
+    throw error
+  }
+}
