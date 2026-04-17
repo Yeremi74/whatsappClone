@@ -22,7 +22,6 @@ const DashboardLogin = () => {
   })
   
   const [errors, setErrors] = useState({})
-  const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
 
@@ -236,20 +235,6 @@ const DashboardLogin = () => {
               autoComplete="new-password"
               required
             />
-          )}
-
-          {!isRegisterPage && (
-            <div className={styles.formOptions}>
-              <label className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                <span>{t('login.rememberMe')}</span>
-              </label>
-              <a href="#" className={styles.forgotPassword}>{t('login.forgotPassword')}</a>
-            </div>
           )}
 
           <button type="submit" className={styles.loginButton} disabled={isLoading}>
