@@ -217,6 +217,8 @@ const DashboardLogin = () => {
             placeholder={t(isRegisterPage ? 'register.passwordPlaceholder' : 'login.passwordPlaceholder')}
             error={errors.password}
             hint={isRegisterPage && !errors.password && formData.password ? t('register.passwordHint') : null}
+            showPasswordToggle
+            autoComplete={isRegisterPage ? 'new-password' : 'current-password'}
             required
           />
 
@@ -230,6 +232,8 @@ const DashboardLogin = () => {
               onChange={handleChange}
               placeholder={t('register.confirmPasswordPlaceholder')}
               error={errors.confirmPassword}
+              showPasswordToggle
+              autoComplete="new-password"
               required
             />
           )}

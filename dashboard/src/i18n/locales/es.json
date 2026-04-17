@@ -3,6 +3,10 @@
     "switchToLight": "Cambiar a modo claro",
     "switchToDark": "Cambiar a modo oscuro"
   },
+  "common": {
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña"
+  },
   "login": {
     "title": "Bienvenido",
     "subtitle": "Inicia sesión en tu cuenta",

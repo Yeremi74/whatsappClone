@@ -29,6 +29,54 @@
   transition: border-color 0.15s ease;
 }
 
+/* Oculta el botón nativo de revelar contraseña (Edge/IE y Chromium) para usar solo el control propio */
+.passwordInputWrap input::-ms-reveal,
+.passwordInputWrap input::-ms-clear {
+  display: none;
+}
+
+.passwordInputWrap input::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  display: none;
+  pointer-events: none;
+  position: absolute;
+}
+
+.passwordInputWrap {
+  position: relative;
+  width: 100%;
+}
+
+.formGroup input.inputWithToggle {
+  padding-right: 44px;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  line-height: 0;
+}
+
+.passwordToggle:hover {
+  color: var(--color-text-primary);
+}
+
+.passwordToggle:focus-visible {
+  outline: 2px solid var(--color-nav-cta);
+  outline-offset: 2px;
+}
+
 .formGroup input:focus {
   border-color: var(--color-nav-cta);
   box-shadow: var(--color-focus-ring);
