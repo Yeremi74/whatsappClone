@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { io } from 'socket.io-client'
+import { createSocketIo } from '../../utils/socketClient'
 import { listConversations } from '../../actions/conversationActions'
 import styles from './ChatsList.module.css'
 
@@ -42,11 +42,7 @@ const ChatsList = () => {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) return undefined
-    const socket = io({
-      path: '/socket.io',
-      auth: { token },
-      transports: ['websocket', 'polling']
-    })
+    const socket = createSocketIo({ auth: { token } })
     socket.on('inbox:update', () => {
       load(true)
     })

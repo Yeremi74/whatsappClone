@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useDashboard } from '../../context/DashboardContext'
-import { io } from 'socket.io-client'
+import { createSocketIo } from '../../utils/socketClient'
 import {
   listConversations,
   markConversationRead,
@@ -57,11 +57,7 @@ const SidebarConversations = ({ activeUserId }) => {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) return undefined
-    const socket = io({
-      path: '/socket.io',
-      auth: { token },
-      transports: ['websocket', 'polling']
-    })
+    const socket = createSocketIo({ auth: { token } })
     socket.on('inbox:update', () => {
       load(true)
     })

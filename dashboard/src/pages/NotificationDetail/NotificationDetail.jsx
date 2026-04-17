@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDashboard } from '../../context/DashboardContext'
-import { io } from 'socket.io-client'
+import { createSocketIo } from '../../utils/socketClient'
 import {
   getReceivedFriendRequests,
   acceptFriendRequest,
@@ -40,11 +40,7 @@ const NotificationDetail = ({ requestId }) => {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) return undefined
-    const socket = io({
-      path: '/socket.io',
-      auth: { token },
-      transports: ['websocket', 'polling']
-    })
+    const socket = createSocketIo({ auth: { token } })
     socket.on('friendRequests:update', () => {
       load(true)
     })

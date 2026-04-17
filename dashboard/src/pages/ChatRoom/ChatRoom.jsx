@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDashboard } from '../../context/DashboardContext'
-import { io } from 'socket.io-client'
+import { createSocketIo } from '../../utils/socketClient'
 import {
   openConversationWithUser,
   getConversationMessages,
@@ -511,11 +511,7 @@ useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) return
 
-    const socket = io({
-      path: '/socket.io',
-      auth: { token },
-      transports: ['websocket', 'polling']
-    })
+    const socket = createSocketIo({ auth: { token } })
     socketRef.current = socket
 
     const onConnect = () => {

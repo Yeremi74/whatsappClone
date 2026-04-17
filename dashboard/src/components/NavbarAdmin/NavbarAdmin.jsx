@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { io } from 'socket.io-client'
+import { createSocketIo } from '../../utils/socketClient'
 import { useDashboard } from '../../context/DashboardContext'
 import styles from './NavbarAdmin.module.css'
 import { logout } from '../../actions/authActions'
@@ -184,11 +184,7 @@ const NavbarAdmin = () => {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) return undefined
-    const socket = io({
-      path: '/socket.io',
-      auth: { token },
-      transports: ['websocket', 'polling']
-    })
+    const socket = createSocketIo({ auth: { token } })
     socket.on('friendRequests:update', () => {
       loadIncomingFriendRequests(true)
     })
